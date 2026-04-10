@@ -11,9 +11,7 @@ class User extends Authenticatable
     use HasApiTokens, HasUuid;
 
     protected $primaryKey = 'user_uuid';
-
     public $incrementing = false;
-
     protected $keyType = 'string';
 
     protected $fillable = [

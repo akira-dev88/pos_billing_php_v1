@@ -3,24 +3,30 @@
 namespace App\Models\Traits;
 
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin Model
+ */
 trait HasUuid
 {
-    protected static function bootHasUuid()
+    public static function bootHasUuid(): void
     {
-        static::creating(function ($model) {
-            if (!$model->{$model->getKeyName()}) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
+        static::creating(function (Model $model) {
+            $key = $model->getKeyName();
+
+            if (empty($model->{$key})) {
+                $model->{$key} = (string) Str::uuid();
             }
         });
     }
 
-    public function getIncrementing()
+    public function getIncrementing(): bool
     {
         return false;
     }
 
-    public function getKeyType()
+    public function getKeyType(): string
     {
         return 'string';
     }
