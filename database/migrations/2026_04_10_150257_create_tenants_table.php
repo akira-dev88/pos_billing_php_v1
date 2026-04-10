@@ -11,17 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-
-            // ✅ UUID instead of id
-            $table->uuid('user_uuid')->primary();
-
-            // ✅ Tenant relation
-            $table->uuid('tenant_uuid');
+        Schema::create('tenants', function (Blueprint $table) {
+            $table->uuid('tenant_uuid')->primary();
 
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('password');
 
             $table->timestamps();
         });
@@ -32,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('tenants');
     }
 };
