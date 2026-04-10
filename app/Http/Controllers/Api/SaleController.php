@@ -50,7 +50,7 @@ class SaleController extends Controller
                 $total += $itemTotal;
                 $taxTotal += $taxAmount;
 
-                // ✅ Reduce stock
+                // ✅ Reduce stock ONCE
                 $product->stock -= $quantity;
                 $product->save();
 
@@ -61,35 +61,45 @@ class SaleController extends Controller
                     'tax_percent' => $taxPercent,
                     'tax_amount' => $taxAmount,
                 ];
-
-                // ✅ Reduce stock
-                $product->stock -= $quantity;
-                $product->save();
-
-                // ✅ Add ledger entry
-                StockLedger::create([
-                    'tenant_uuid' => app('tenant_uuid'),
-                    'product_uuid' => $product->product_uuid,
-                    'quantity' => -$quantity,
-                    'type' => 'sale',
-                    'reference_uuid' => null, // we’ll improve later
-                    'note' => 'Sale transaction',
-                ]);
             }
 
             $grandTotal = $total + $taxTotal;
 
+            $lastInvoice = Sale::where('tenant_uuid', app('tenant_uuid'))
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            $nextNumber = 1;
+
+            if ($lastInvoice && $lastInvoice->invoice_number) {
+                $lastNumber = (int) str_replace('INV-', '', $lastInvoice->invoice_number);
+                $nextNumber = $lastNumber + 1;
+            }
+
+            $invoiceNumber = 'INV-' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+
             $sale = Sale::create([
                 'tenant_uuid' => app('tenant_uuid'),
+                'invoice_number' => $invoiceNumber,
                 'total' => $total,
                 'tax' => $taxTotal,
                 'grand_total' => $grandTotal,
             ]);
 
             foreach ($itemsData as $data) {
+
                 SaleItem::create([
                     'sale_uuid' => $sale->sale_uuid,
                     ...$data
+                ]);
+
+                StockLedger::create([
+                    'tenant_uuid' => app('tenant_uuid'),
+                    'product_uuid' => $data['product_uuid'],
+                    'quantity' => -$data['quantity'],
+                    'type' => 'sale',
+                    'reference_uuid' => $sale->sale_uuid, // ✅ FIXED
+                    'note' => 'Sale transaction',
                 ]);
             }
 
@@ -106,5 +116,15 @@ class SaleController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function show($sale_uuid)
+    {
+        $sale = Sale::where('sale_uuid', $sale_uuid)
+            ->where('tenant_uuid', app('tenant_uuid'))
+            ->with('items.product')
+            ->firstOrFail();
+
+        return response()->json($sale);
     }
 }

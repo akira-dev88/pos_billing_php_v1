@@ -25,7 +25,10 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     // 📦 Products
     Route::post('/products', [ProductController::class, 'store']);
     Route::get('/products', [ProductController::class, 'index']);
+    
     Route::post('/sales', [SaleController::class, 'store']);
+    Route::get('/sales/{sale_uuid}', [SaleController::class, 'show']);
 
     Route::post('/purchases', [PurchaseController::class, 'store']);
+
 });

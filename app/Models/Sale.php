@@ -16,9 +16,15 @@ class Sale extends Model
     protected $fillable = [
         'sale_uuid',
         'tenant_uuid',
+        'invoice_number',
         'total',
         'tax',
         'grand_total',
         'status',
     ];
+
+    public function items()
+    {
+        return $this->hasMany(SaleItem::class, 'sale_uuid', 'sale_uuid');
+    }
 }

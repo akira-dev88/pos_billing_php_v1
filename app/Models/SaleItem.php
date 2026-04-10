@@ -14,4 +14,9 @@ class SaleItem extends Model
         'tax_percent',
         'tax_amount',
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_uuid', 'product_uuid');
+    }
 }
