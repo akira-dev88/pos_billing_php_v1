@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\SaleController;
 
 
 Route::get('/ping', function () {
@@ -24,4 +25,6 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     // 📦 Products
     Route::post('/products', [ProductController::class, 'store']);
     Route::get('/products', [ProductController::class, 'index']);
+    Route::post('/sales', [SaleController::class, 'store']);
+
 });

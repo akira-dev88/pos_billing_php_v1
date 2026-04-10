@@ -114,3 +114,21 @@ Get Products
 
 GET /api/products
 Authorization: Bearer TOKEN
+
+Create Sale
+POST /api/sales
+
+Authorization: Bearer TOKEN
+
+{
+  "items": [
+    {
+      "product_uuid": "UUID1",
+      "quantity": 2
+    },
+    {
+      "product_uuid": "UUID2",
+      "quantity": 1
+    }
+  ]
+}
