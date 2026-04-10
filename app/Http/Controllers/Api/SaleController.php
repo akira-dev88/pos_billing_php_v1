@@ -8,6 +8,7 @@ use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
+use App\Models\StockLedger;
 
 class SaleController extends Controller
 {
@@ -60,6 +61,20 @@ class SaleController extends Controller
                     'tax_percent' => $taxPercent,
                     'tax_amount' => $taxAmount,
                 ];
+
+                // ✅ Reduce stock
+                $product->stock -= $quantity;
+                $product->save();
+
+                // ✅ Add ledger entry
+                StockLedger::create([
+                    'tenant_uuid' => app('tenant_uuid'),
+                    'product_uuid' => $product->product_uuid,
+                    'quantity' => -$quantity,
+                    'type' => 'sale',
+                    'reference_uuid' => null, // we’ll improve later
+                    'note' => 'Sale transaction',
+                ]);
             }
 
             $grandTotal = $total + $taxTotal;
