@@ -64,3 +64,53 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+# API DOC
+
+REGISTER
+
+POST http://127.0.0.1:8000/api/register
+
+Body (JSON):
+{
+  "tenant_name": "My Shop",
+  "name": "Admin",
+  "email": "admin@test.com",
+  "password": "123456"
+}
+
+Expected Response:
+{
+  "user": {...},
+  "tenant": {...},
+  "token": "xxxx"
+}
+
+LOGIN
+POST http://127.0.0.1:8000/api/login
+{
+  "email": "admin@test.com",
+  "password": "123456"
+}
+
+
+Create Product
+
+POST /api/products
+
+Authorization: Bearer TOKEN
+
+{
+  "name": "Rice 1kg",
+  "price": 50,
+  "barcode": "123456789",
+  "sku": "RICE001",
+  "gst_percent": 5,
+  "stock": 100
+}
+
+Get Products
+
+GET /api/products
+Authorization: Bearer TOKEN

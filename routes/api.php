@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Api\ProductController;
+
 
 Route::get('/ping', function () {
     return response()->json(['message' => 'API working']);
@@ -18,4 +20,8 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::get('/me', function (Request $request) {
         return response()->json($request->user());
     });
+
+    // 📦 Products
+    Route::post('/products', [ProductController::class, 'store']);
+    Route::get('/products', [ProductController::class, 'index']);
 });
