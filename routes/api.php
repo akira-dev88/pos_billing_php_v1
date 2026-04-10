@@ -5,7 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\SaleController;
-
+use App\Http\Controllers\Api\PurchaseController;
 
 Route::get('/ping', function () {
     return response()->json(['message' => 'API working']);
@@ -27,4 +27,5 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::get('/products', [ProductController::class, 'index']);
     Route::post('/sales', [SaleController::class, 'store']);
 
+    Route::post('/purchases', [PurchaseController::class, 'store']);
 });
