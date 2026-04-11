@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\CustomerPaymentController;
 use App\Http\Controllers\Api\SettingController;
 
+use App\Http\Controllers\Api\ReportController;
+
 Route::get('/ping', function () {
     return response()->json(['message' => 'API working']);
 });
@@ -72,5 +74,9 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
 
     Route::get('/settings', [SettingController::class, 'get']);
     Route::post('/settings', [SettingController::class, 'save']);
-    
+
+    Route::get('/reports/dashboard', [ReportController::class, 'dashboard']);
+    Route::get('/reports/top-products', [ReportController::class, 'topProducts']);
+    Route::get('/reports/stock', [ReportController::class, 'stock']);
+    Route::get('/reports/profit', [ReportController::class, 'profit']);
 });
