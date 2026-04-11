@@ -16,6 +16,7 @@ class Cart extends Model
         'cart_uuid',
         'tenant_uuid',
         'status',
+        'discount',
     ];
 
     public function items()

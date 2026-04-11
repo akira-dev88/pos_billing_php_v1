@@ -12,6 +12,7 @@ class CartItem extends Model
         'quantity',
         'price',
         'tax_percent',
+        'discount'
     ];
 
     public function product()
