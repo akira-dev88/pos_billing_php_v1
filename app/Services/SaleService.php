@@ -7,9 +7,13 @@ use App\Models\SaleItem;
 use App\Models\Product;
 use App\Models\StockLedger;
 use Illuminate\Support\Facades\DB;
+use App\Models\Cart;
+use App\Models\CartItem;
+use App\Models\Payment;
 
 class SaleService
 {
+    // ✅ DIRECT SALE (old API support)
     public function createSale(array $items, string $tenantUuid)
     {
         return DB::transaction(function () use ($items, $tenantUuid) {
@@ -40,7 +44,6 @@ class SaleService
                 $total += $itemTotal;
                 $taxTotal += $taxAmount;
 
-                // Reduce stock
                 $product->decrement('stock', $quantity);
 
                 $itemsData[] = [
@@ -54,10 +57,7 @@ class SaleService
 
             $grandTotal = $total + $taxTotal;
 
-            // Invoice generation
-            $lastInvoice = Sale::where('tenant_uuid', $tenantUuid)
-                ->latest()
-                ->first();
+            $lastInvoice = Sale::where('tenant_uuid', $tenantUuid)->latest()->first();
 
             $nextNumber = $lastInvoice
                 ? ((int) str_replace('INV-', '', $lastInvoice->invoice_number)) + 1
@@ -71,6 +71,7 @@ class SaleService
                 'total' => $total,
                 'tax' => $taxTotal,
                 'grand_total' => $grandTotal,
+                'status' => 'completed',
             ]);
 
             foreach ($itemsData as $data) {
@@ -86,13 +87,115 @@ class SaleService
                     'quantity' => -$data['quantity'],
                     'type' => 'sale',
                     'reference_uuid' => $sale->sale_uuid,
-                    'note' => 'Sale transaction',
+                    'note' => 'Direct sale',
                 ]);
             }
 
             return [
                 'sale' => $sale,
                 'items' => $itemsData
+            ];
+        });
+    }
+
+    // ✅ CART CHECKOUT (new flow)
+    public function checkoutCart(string $cartUuid, array $payments, string $tenantUuid)
+    {
+        return DB::transaction(function () use ($cartUuid, $payments, $tenantUuid) {
+
+            $cart = Cart::where('cart_uuid', $cartUuid)
+                ->where('tenant_uuid', $tenantUuid)
+                ->with('items.product')
+                ->firstOrFail();
+
+            if ($cart->status === 'completed') {
+                throw new \Exception("Cart already completed");
+            }
+
+            $total = 0;
+            $taxTotal = 0;
+
+            foreach ($cart->items as $item) {
+
+                $product = Product::where('product_uuid', $item->product_uuid)
+                    ->where('tenant_uuid', $tenantUuid)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                if ($product->stock < $item->quantity) {
+                    throw new \Exception("Insufficient stock for {$product->name}");
+                }
+
+                $itemTotal = $item->price * $item->quantity;
+                $taxAmount = ($itemTotal * $item->tax_percent) / 100;
+
+                $total += $itemTotal;
+                $taxTotal += $taxAmount;
+
+                $product->decrement('stock', $item->quantity);
+            }
+
+            $grandTotal = $total + $taxTotal;
+
+            $lastInvoice = Sale::where('tenant_uuid', $tenantUuid)->latest()->first();
+
+            $nextNumber = $lastInvoice
+                ? ((int) str_replace('INV-', '', $lastInvoice->invoice_number)) + 1
+                : 1;
+
+            $invoiceNumber = 'INV-' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+
+            $sale = Sale::create([
+                'tenant_uuid' => $tenantUuid,
+                'invoice_number' => $invoiceNumber,
+                'total' => $total,
+                'tax' => $taxTotal,
+                'grand_total' => $grandTotal,
+                'status' => 'completed',
+            ]);
+
+            foreach ($cart->items as $item) {
+
+                SaleItem::create([
+                    'sale_uuid' => $sale->sale_uuid,
+                    'product_uuid' => $item->product_uuid,
+                    'quantity' => $item->quantity,
+                    'price' => $item->price,
+                    'tax_percent' => $item->tax_percent,
+                    'tax_amount' => ($item->price * $item->quantity * $item->tax_percent) / 100,
+                ]);
+
+                StockLedger::create([
+                    'tenant_uuid' => $tenantUuid,
+                    'product_uuid' => $item->product_uuid,
+                    'quantity' => -$item->quantity,
+                    'type' => 'sale',
+                    'reference_uuid' => $sale->sale_uuid,
+                    'note' => 'Sale via cart checkout',
+                ]);
+            }
+
+            $paidAmount = 0;
+
+            foreach ($payments as $p) {
+
+                Payment::create([
+                    'tenant_uuid' => $tenantUuid,
+                    'sale_uuid' => $sale->sale_uuid,
+                    'method' => $p['method'],
+                    'amount' => $p['amount'],
+                    'reference' => $p['reference'] ?? null,
+                ]);
+
+                $paidAmount += $p['amount'];
+            }
+
+            $cart->update(['status' => 'completed']);
+
+            return [
+                'sale' => $sale,
+                'paid' => $paidAmount,
+                'balance' => $grandTotal - $paidAmount
             ];
         });
     }

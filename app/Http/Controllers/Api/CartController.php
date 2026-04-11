@@ -25,21 +25,34 @@ class CartController extends Controller
     // ➕ Add item
     public function addItem(Request $request, $cart_uuid)
     {
+        $request->validate([
+            'product_uuid' => 'required|uuid',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
         $product = Product::where('product_uuid', $request->product_uuid)
             ->where('tenant_uuid', app('tenant_uuid'))
             ->firstOrFail();
 
-        $item = CartItem::updateOrCreate(
-            [
+        // 🔍 Check if item already exists
+        $item = CartItem::where('cart_uuid', $cart_uuid)
+            ->where('product_uuid', $product->product_uuid)
+            ->first();
+
+        if ($item) {
+            // ✅ Increment properly
+            $item->quantity += $request->quantity;
+            $item->save();
+        } else {
+            // ✅ Create new
+            $item = CartItem::create([
                 'cart_uuid' => $cart_uuid,
-                'product_uuid' => $product->product_uuid
-            ],
-            [
-                'quantity' => DB::raw('quantity + ' . $request->quantity),
+                'product_uuid' => $product->product_uuid,
+                'quantity' => $request->quantity,
                 'price' => $product->price,
                 'tax_percent' => $product->gst_percent,
-            ]
-        );
+            ]);
+        }
 
         return response()->json($item);
     }
@@ -52,7 +65,26 @@ class CartController extends Controller
             ->with('items.product')
             ->firstOrFail();
 
-        return response()->json($cart);
+        $total = 0;
+        $taxTotal = 0;
+
+        foreach ($cart->items as $item) {
+
+            $itemTotal = $item->price * $item->quantity;
+            $taxAmount = ($itemTotal * $item->tax_percent) / 100;
+
+            $total += $itemTotal;
+            $taxTotal += $taxAmount;
+        }
+
+        return response()->json([
+            'cart' => $cart,
+            'summary' => [
+                'total' => $total,
+                'tax' => $taxTotal,
+                'grand_total' => $total + $taxTotal
+            ]
+        ]);
     }
 
     // ⏸ Hold cart

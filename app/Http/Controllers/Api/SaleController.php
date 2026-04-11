@@ -39,4 +39,27 @@ class SaleController extends Controller
             ], 500);
         }
     }
+
+    public function checkout(Request $request, $cart_uuid)
+    {
+        $request->validate([
+            'payments' => 'required|array|min:1',
+            'payments.*.method' => 'required|string',
+            'payments.*.amount' => 'required|numeric|min:0',
+        ]);
+
+        try {
+            $result = $this->saleService->checkoutCart(
+                $cart_uuid,
+                $request->payments,
+                app('tenant_uuid')
+            );
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

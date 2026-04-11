@@ -39,10 +39,13 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('/sales', [SaleController::class, 'store']);
     Route::get('/sales/{sale_uuid}', [SaleController::class, 'show']);
 
+    Route::post('/carts/{cart_uuid}/checkout', [SaleController::class, 'checkout']);
+    
     Route::post('/purchases', [PurchaseController::class, 'store']);
-
+    
     Route::prefix('carts')->group(function () {
-
+        
+        
         Route::post('/', [CartController::class, 'create']);
         Route::get('/held', [CartController::class, 'heldCarts']);
 
