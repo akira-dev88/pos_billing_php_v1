@@ -11,13 +11,14 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Payment;
 use App\Models\Customer;
+use App\Models\CustomerLedger;
 
 class SaleService
 {
     // ✅ DIRECT SALE (old API support)
-    public function createSale(array $items, string $tenantUuid)
+    public function createSale(array $items, string $tenantUuid, ?string $customerUuid = null)
     {
-        return DB::transaction(function () use ($items, $tenantUuid) {
+        return DB::transaction(function () use ($items, $tenantUuid, $customerUuid) {
 
             $total = 0;
             $taxTotal = 0;
@@ -74,6 +75,17 @@ class SaleService
                 'grand_total' => $grandTotal,
                 'status' => 'completed',
             ]);
+
+            if ($customerUuid) {
+                CustomerLedger::create([
+                    'tenant_uuid' => $tenantUuid,
+                    'customer_uuid' => $customerUuid,
+                    'type' => 'sale',
+                    'amount' => $grandTotal,
+                    'reference_uuid' => $sale->sale_uuid,
+                    'note' => 'Sale created',
+                ]);
+            }
 
             foreach ($itemsData as $data) {
 
