@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\SaleController;
 use App\Http\Controllers\Api\PurchaseController;
+use App\Http\Controllers\Api\CartController;
 
 Route::get('/ping', function () {
     return response()->json(['message' => 'API working']);
@@ -39,4 +40,16 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::get('/sales/{sale_uuid}', [SaleController::class, 'show']);
 
     Route::post('/purchases', [PurchaseController::class, 'store']);
+
+    Route::prefix('carts')->group(function () {
+
+        Route::post('/', [CartController::class, 'create']);
+        Route::get('/held', [CartController::class, 'heldCarts']);
+
+        Route::get('/{cart_uuid}', [CartController::class, 'show']);
+        Route::post('/{cart_uuid}/items', [CartController::class, 'addItem']);
+
+        Route::post('/{cart_uuid}/hold', [CartController::class, 'hold']);
+        Route::post('/{cart_uuid}/resume', [CartController::class, 'resume']);
+    });
 });

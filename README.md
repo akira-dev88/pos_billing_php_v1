@@ -157,3 +157,27 @@ Authorization: Bearer TOKEN
 Expected:
 
 Exact product returned
+
+
+Create Cart
+POST /api/carts
+
+Add Item
+POST /api/carts/{cart_uuid}/items
+
+{
+  "product_uuid": "UUID",
+  "quantity": 2
+}
+
+View Cart
+GET /api/carts/{cart_uuid}
+
+Hold Cart
+POST /api/carts/{cart_uuid}/hold
+
+List Held
+GET /api/carts/held
+
+Resume
+POST /api/carts/{cart_uuid}/resume
