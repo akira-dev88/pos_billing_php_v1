@@ -46,13 +46,15 @@ class SaleController extends Controller
             'payments' => 'required|array|min:1',
             'payments.*.method' => 'required|string',
             'payments.*.amount' => 'required|numeric|min:0',
+            'customer_uuid' => 'nullable|uuid'
         ]);
 
         try {
             $result = $this->saleService->checkoutCart(
                 $cart_uuid,
                 $request->payments,
-                app('tenant_uuid')
+                app('tenant_uuid'),
+                $request->customer_uuid
             );
 
             return response()->json($result);

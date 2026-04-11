@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\SaleController;
 use App\Http\Controllers\Api\PurchaseController;
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\CustomerController;
 
 Route::get('/ping', function () {
     return response()->json(['message' => 'API working']);
@@ -40,12 +41,12 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::get('/sales/{sale_uuid}', [SaleController::class, 'show']);
 
     Route::post('/carts/{cart_uuid}/checkout', [SaleController::class, 'checkout']);
-    
+
     Route::post('/purchases', [PurchaseController::class, 'store']);
-    
+
     Route::prefix('carts')->group(function () {
-        
-        
+
+
         Route::post('/', [CartController::class, 'create']);
         Route::get('/held', [CartController::class, 'heldCarts']);
 
@@ -55,4 +56,7 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
         Route::post('/{cart_uuid}/hold', [CartController::class, 'hold']);
         Route::post('/{cart_uuid}/resume', [CartController::class, 'resume']);
     });
+
+    Route::get('/customers', [CustomerController::class, 'index']);
+    Route::post('/customers', [CustomerController::class, 'store']);
 });

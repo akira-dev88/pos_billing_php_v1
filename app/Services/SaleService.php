@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Payment;
+use App\Models\Customer;
 
 class SaleService
 {
@@ -99,9 +100,9 @@ class SaleService
     }
 
     // ✅ CART CHECKOUT (new flow)
-    public function checkoutCart(string $cartUuid, array $payments, string $tenantUuid)
+    public function checkoutCart(string $cartUuid, array $payments, string $tenantUuid, ?string $customerUuid = null)
     {
-        return DB::transaction(function () use ($cartUuid, $payments, $tenantUuid) {
+        return DB::transaction(function () use ($cartUuid, $payments, $tenantUuid, $customerUuid) {
 
             $cart = Cart::where('cart_uuid', $cartUuid)
                 ->where('tenant_uuid', $tenantUuid)
@@ -147,6 +148,7 @@ class SaleService
 
             $sale = Sale::create([
                 'tenant_uuid' => $tenantUuid,
+                'customer_uuid' => $customerUuid,
                 'invoice_number' => $invoiceNumber,
                 'total' => $total,
                 'tax' => $taxTotal,
@@ -188,6 +190,20 @@ class SaleService
                 ]);
 
                 $paidAmount += $p['amount'];
+            }
+
+            $balance = $grandTotal - $paidAmount;
+
+            // 🧾 Update customer credit
+            if ($customerUuid && $balance > 0) {
+
+                $customer = Customer::where('customer_uuid', $customerUuid)
+                    ->where('tenant_uuid', $tenantUuid)
+                    ->first();
+
+                if ($customer) {
+                    $customer->increment('credit_balance', $balance);
+                }
             }
 
             $cart->update(['status' => 'completed']);
