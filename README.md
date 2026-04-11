@@ -132,3 +132,28 @@ Authorization: Bearer TOKEN
     }
   ]
 }
+
+Search Test
+GET /api/products/search?q=rice
+Authorization: Bearer TOKEN
+
+Expected:
+
+Max 20 products
+Matching names
+
+Barcode Test
+GET /api/products/scan/123456789
+Authorization: Bearer TOKEN
+
+Expected:
+
+Exact product returned
+
+SKU Test
+GET /api/products/sku/RICE001
+Authorization: Bearer TOKEN
+
+Expected:
+
+Exact product returned

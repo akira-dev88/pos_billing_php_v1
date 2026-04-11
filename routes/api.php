@@ -25,10 +25,18 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     // 📦 Products
     Route::post('/products', [ProductController::class, 'store']);
     Route::get('/products', [ProductController::class, 'index']);
-    
+
+    // 🔍 Search
+    Route::get('/products/search', [ProductController::class, 'search']);
+
+    // 📦 Barcode
+    Route::get('/products/scan/{barcode}', [ProductController::class, 'findByBarcode']);
+
+    // 🏷 SKU
+    Route::get('/products/sku/{sku}', [ProductController::class, 'findBySku']);
+
     Route::post('/sales', [SaleController::class, 'store']);
     Route::get('/sales/{sale_uuid}', [SaleController::class, 'show']);
 
     Route::post('/purchases', [PurchaseController::class, 'store']);
-
 });

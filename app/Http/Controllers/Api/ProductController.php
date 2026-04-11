@@ -38,4 +38,37 @@ class ProductController extends Controller
 
         return response()->json($products);
     }
+
+    // 🔍 Search products (for typing)
+    public function search(Request $request)
+    {
+        $query = $request->query('q');
+
+        $products = Product::where('tenant_uuid', app('tenant_uuid'))
+            ->where('name', 'LIKE', "%{$query}%")
+            ->limit(20) // 🔥 important for speed
+            ->get();
+
+        return response()->json($products);
+    }
+
+    // 📦 Barcode scan
+    public function findByBarcode($barcode)
+    {
+        $product = Product::where('tenant_uuid', app('tenant_uuid'))
+            ->where('barcode', $barcode)
+            ->firstOrFail();
+
+        return response()->json($product);
+    }
+
+    // 🏷 SKU lookup
+    public function findBySku($sku)
+    {
+        $product = Product::where('tenant_uuid', app('tenant_uuid'))
+            ->where('sku', $sku)
+            ->firstOrFail();
+
+        return response()->json($product);
+    }
 }
