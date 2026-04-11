@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\PurchaseController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\CustomerPaymentController;
+use App\Http\Controllers\Api\SettingController;
 
 Route::get('/ping', function () {
     return response()->json(['message' => 'API working']);
@@ -68,4 +69,8 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('/carts/{cart_uuid}/discount', [CartController::class, 'applyDiscount']);
 
     Route::get('/sales/{sale_uuid}/invoice', [SaleController::class, 'invoice']);
+
+    Route::get('/settings', [SettingController::class, 'get']);
+    Route::post('/settings', [SettingController::class, 'save']);
+    
 });

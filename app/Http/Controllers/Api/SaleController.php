@@ -10,6 +10,7 @@ use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use App\Models\StockLedger;
 use App\Services\SaleService;
+use App\Models\Setting;
 
 class SaleController extends Controller
 {
@@ -67,6 +68,9 @@ class SaleController extends Controller
 
     public function invoice($sale_uuid)
     {
+
+        $setting = Setting::where('tenant_uuid', app('tenant_uuid'))->first();
+
         $sale = Sale::where('sale_uuid', $sale_uuid)
             ->where('tenant_uuid', app('tenant_uuid'))
             ->with(['items.product', 'payments', 'customer'])
@@ -106,6 +110,14 @@ class SaleController extends Controller
         });
 
         return response()->json([
+
+            'shop' => $setting ? [
+                'name' => $setting->shop_name,
+                'mobile' => $setting->mobile,
+                'address' => $setting->address,
+                'gstin' => $setting->gstin,
+            ] : null,
+            
             'invoice_number' => $sale->invoice_number,
             'date' => $sale->created_at,
 

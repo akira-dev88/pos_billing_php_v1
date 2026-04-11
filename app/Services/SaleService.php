@@ -12,6 +12,7 @@ use App\Models\CartItem;
 use App\Models\Payment;
 use App\Models\Customer;
 use App\Models\CustomerLedger;
+use App\Models\Setting;
 
 class SaleService
 {
@@ -23,6 +24,8 @@ class SaleService
             $total = 0;
             $taxTotal = 0;
             $itemsData = [];
+            $setting = Setting::where('tenant_uuid', $tenantUuid)->first();
+            $prefix = $setting->invoice_prefix ?? 'INV';
 
             foreach ($items as $item) {
 
@@ -65,7 +68,7 @@ class SaleService
                 ? ((int) str_replace('INV-', '', $lastInvoice->invoice_number)) + 1
                 : 1;
 
-            $invoiceNumber = 'INV-' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+            $invoiceNumber = $prefix . '-' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
 
             $sale = Sale::create([
                 'tenant_uuid' => $tenantUuid,
