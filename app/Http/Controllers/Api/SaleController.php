@@ -64,4 +64,67 @@ class SaleController extends Controller
             ], 500);
         }
     }
+
+    public function invoice($sale_uuid)
+    {
+        $sale = Sale::where('sale_uuid', $sale_uuid)
+            ->where('tenant_uuid', app('tenant_uuid'))
+            ->with(['items.product', 'payments', 'customer'])
+            ->firstOrFail();
+
+        $items = [];
+        $total = 0;
+        $taxTotal = 0;
+
+        foreach ($sale->items as $item) {
+
+            $base = $item->price * $item->quantity;
+            $tax = $item->tax_amount;
+
+            $items[] = [
+                'name' => $item->product->name,
+                'qty' => $item->quantity,
+                'price' => $item->price,
+                'total' => $base,
+                'tax_percent' => $item->tax_percent,
+                'tax_amount' => $tax
+            ];
+
+            $total += $base;
+            $taxTotal += $tax;
+        }
+
+        // GST Split (India)
+        $cgst = $taxTotal / 2;
+        $sgst = $taxTotal / 2;
+
+        $payments = $sale->payments->map(function ($p) {
+            return [
+                'method' => $p->method,
+                'amount' => $p->amount
+            ];
+        });
+
+        return response()->json([
+            'invoice_number' => $sale->invoice_number,
+            'date' => $sale->created_at,
+
+            'customer' => $sale->customer ? [
+                'name' => $sale->customer->name,
+                'mobile' => $sale->customer->mobile
+            ] : null,
+
+            'items' => $items,
+
+            'summary' => [
+                'total' => $total,
+                'tax' => $taxTotal,
+                'cgst' => $cgst,
+                'sgst' => $sgst,
+                'grand_total' => $sale->grand_total
+            ],
+
+            'payments' => $payments
+        ]);
+    }
 }

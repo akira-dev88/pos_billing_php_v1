@@ -66,4 +66,6 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
 
     Route::put('/carts/{cart_uuid}/items/{product_uuid}', [CartController::class, 'updateItem']);
     Route::post('/carts/{cart_uuid}/discount', [CartController::class, 'applyDiscount']);
+
+    Route::get('/sales/{sale_uuid}/invoice', [SaleController::class, 'invoice']);
 });

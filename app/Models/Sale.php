@@ -27,4 +27,14 @@ class Sale extends Model
     {
         return $this->hasMany(SaleItem::class, 'sale_uuid', 'sale_uuid');
     }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'sale_uuid', 'sale_uuid');
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_uuid', 'customer_uuid');
+    }
 }
