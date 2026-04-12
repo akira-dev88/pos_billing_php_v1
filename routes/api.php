@@ -79,4 +79,17 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::get('/reports/top-products', [ReportController::class, 'topProducts']);
     Route::get('/reports/stock', [ReportController::class, 'stock']);
     Route::get('/reports/profit', [ReportController::class, 'profit']);
+
+    Route::post('/settings', [SettingController::class, 'save'])
+    ->middleware('role:owner');
+
+    Route::post('/products', [ProductController::class, 'store'])
+    ->middleware('role:owner,manager');
+
+    Route::post('/carts/{cart_uuid}/checkout', [SaleController::class, 'checkout'])
+    ->middleware('role:owner,manager,cashier');
+
+    Route::get('/me', function (Request $request) {
+    return response()->json($request->user());
+});
 });
