@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
 
+use App\Helpers\ResponseHelper;
+
 class ProductController extends Controller
 {
     // ✅ Create Product
@@ -26,7 +28,7 @@ class ProductController extends Controller
             'stock' => $request->stock ?? 0,
         ]);
 
-        return response()->json($product);
+        return ResponseHelper::success($product, 'Product created');
     }
 
     // ✅ List Products
@@ -36,7 +38,7 @@ class ProductController extends Controller
             ->latest()
             ->get();
 
-        return response()->json($products);
+        return ResponseHelper::success($products);
     }
 
     // 🔍 Search products (for typing)
@@ -49,7 +51,7 @@ class ProductController extends Controller
             ->limit(20) // 🔥 important for speed
             ->get();
 
-        return response()->json($products);
+        return ResponseHelper::success($products);
     }
 
     // 📦 Barcode scan
@@ -59,7 +61,7 @@ class ProductController extends Controller
             ->where('barcode', $barcode)
             ->firstOrFail();
 
-        return response()->json($product);
+        return ResponseHelper::success($product, 'Product created');
     }
 
     // 🏷 SKU lookup
@@ -69,6 +71,6 @@ class ProductController extends Controller
             ->where('sku', $sku)
             ->firstOrFail();
 
-        return response()->json($product);
+        return ResponseHelper::success($product, 'Product created');
     }
 }
