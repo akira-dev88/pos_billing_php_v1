@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\SettingController;
 
 use App\Http\Controllers\Api\ReportController;
 
+use App\Http\Controllers\Api\StaffController;
+
 Route::get('/ping', function () {
     return response()->json(['message' => 'API working']);
 });
@@ -81,15 +83,21 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::get('/reports/profit', [ReportController::class, 'profit']);
 
     Route::post('/settings', [SettingController::class, 'save'])
-    ->middleware('role:owner');
+        ->middleware('role:owner');
 
     Route::post('/products', [ProductController::class, 'store'])
-    ->middleware('role:owner,manager');
+        ->middleware('role:owner,manager');
 
     Route::post('/carts/{cart_uuid}/checkout', [SaleController::class, 'checkout'])
-    ->middleware('role:owner,manager,cashier');
+        ->middleware('role:owner,manager,cashier');
 
     Route::get('/me', function (Request $request) {
-    return response()->json($request->user());
-});
+        return response()->json($request->user());
+    });
+
+    Route::middleware(['auth:sanctum', 'tenant', 'role:owner'])->group(function () {
+
+        Route::post('/staff', [StaffController::class, 'store']);
+        Route::get('/staff', [StaffController::class, 'index']);
+    });
 });
