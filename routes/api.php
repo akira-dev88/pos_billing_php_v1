@@ -27,7 +27,20 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
 
     Route::get('/me', function (Request $request) {
-        return response()->json($request->user());
+
+        $user = $request->user();
+
+        $tenant = \App\Models\Tenant::where('tenant_uuid', $user->tenant_uuid)->first();
+
+        return \App\Helpers\ResponseHelper::success([
+            'user' => $user,
+            'tenant' => [
+                'plan' => $tenant->plan,
+                'price' => $tenant->price,
+                'is_active' => $tenant->is_active,
+                'expiry_date' => $tenant->expiry_date,
+            ]
+        ]);
     });
 
     Route::get('/products', [ProductController::class, 'index']);
@@ -88,8 +101,7 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('/carts/{cart_uuid}/checkout', [SaleController::class, 'checkout'])
         ->middleware('role:owner,manager,cashier');
 
-    Route::middleware(['auth:sanctum', 'tenant', 'role:owner'])->group(function () {
-
+    Route::middleware(['role:owner'])->group(function () {
         Route::post('/staff', [StaffController::class, 'store']);
         Route::get('/staff', [StaffController::class, 'index']);
     });

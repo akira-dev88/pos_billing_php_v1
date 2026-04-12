@@ -24,6 +24,9 @@ class AuthController extends Controller
         $tenant = Tenant::create([
             'name' => $request->tenant_name,
             'email' => $request->email,
+            'plan' => 'pro',
+            'price' => 499, // default
+            'expiry_date' => now()->addDays(7), // FREE TRIAL 🔥
         ]);
 
         // Create User

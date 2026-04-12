@@ -18,5 +18,9 @@ class Tenant extends Model
     protected $fillable = [
         'name',
         'email',
+        'is_active',
+        'plan',
+        'price',
+        'expiry_date',
     ];
 }
