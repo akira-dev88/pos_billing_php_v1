@@ -30,8 +30,6 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
         return response()->json($request->user());
     });
 
-    // 📦 Products
-    Route::post('/products', [ProductController::class, 'store']);
     Route::get('/products', [ProductController::class, 'index']);
 
     // 🔍 Search
@@ -75,7 +73,6 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::get('/sales/{sale_uuid}/invoice', [SaleController::class, 'invoice']);
 
     Route::get('/settings', [SettingController::class, 'get']);
-    Route::post('/settings', [SettingController::class, 'save']);
 
     Route::get('/reports/dashboard', [ReportController::class, 'dashboard']);
     Route::get('/reports/top-products', [ReportController::class, 'topProducts']);
@@ -90,10 +87,6 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
 
     Route::post('/carts/{cart_uuid}/checkout', [SaleController::class, 'checkout'])
         ->middleware('role:owner,manager,cashier');
-
-    Route::get('/me', function (Request $request) {
-        return response()->json($request->user());
-    });
 
     Route::middleware(['auth:sanctum', 'tenant', 'role:owner'])->group(function () {
 
