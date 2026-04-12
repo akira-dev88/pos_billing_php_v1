@@ -4,6 +4,10 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
+use App\Helpers\ResponseHelper;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__ . '/../routes/web.php',
@@ -25,7 +29,31 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
     })
-    
-    ->withExceptions(function (Exceptions $exceptions) {
-        //
+
+    ->withExceptions(function ($exceptions) {
+
+        // Validation errors
+        $exceptions->render(function (ValidationException $e, $request) {
+            return ResponseHelper::error(
+                collect($e->errors())->first()[0],
+                422
+            );
+        });
+
+        // HTTP exceptions (404, 403, etc.)
+        $exceptions->render(function (HttpException $e, $request) {
+            return ResponseHelper::error(
+                $e->getMessage() ?: 'HTTP Error',
+                $e->getStatusCode()
+            );
+        });
+
+        // Generic exception
+        $exceptions->render(function (\Throwable $e, $request) {
+
+            return ResponseHelper::error(
+                config('app.debug') ? $e->getMessage() : 'Server Error',
+                500
+            );
+        });
     })->create();

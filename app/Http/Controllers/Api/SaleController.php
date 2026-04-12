@@ -12,6 +12,8 @@ use App\Models\StockLedger;
 use App\Services\SaleService;
 use App\Models\Setting;
 
+use App\Helpers\ResponseHelper;
+
 class SaleController extends Controller
 {
     protected $saleService;
@@ -27,18 +29,12 @@ class SaleController extends Controller
             'items' => 'required|array|min:1',
         ]);
 
-        try {
-            $result = $this->saleService->createSale(
-                $request->items,
-                app('tenant_uuid')
-            );
+        $result = $this->saleService->createSale(
+            $request->items,
+            app('tenant_uuid')
+        );
 
-            return response()->json($result);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        return ResponseHelper::success($result);
     }
 
     public function checkout(Request $request, $cart_uuid)
@@ -117,7 +113,7 @@ class SaleController extends Controller
                 'address' => $setting->address,
                 'gstin' => $setting->gstin,
             ] : null,
-            
+
             'invoice_number' => $sale->invoice_number,
             'date' => $sale->created_at,
 

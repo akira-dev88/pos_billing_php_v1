@@ -10,6 +10,8 @@ use App\Models\Product;
 use App\Models\StockLedger;
 use Illuminate\Support\Facades\DB;
 
+use App\Helpers\ResponseHelper;
+
 class PurchaseController extends Controller
 {
     public function store(Request $request)
@@ -18,9 +20,7 @@ class PurchaseController extends Controller
             'items' => 'required|array|min:1',
         ]);
 
-        DB::beginTransaction();
-
-        try {
+        return DB::transaction(function () use ($request) {
 
             $total = 0;
 
@@ -40,11 +40,8 @@ class PurchaseController extends Controller
                 $quantity = $item['quantity'];
                 $costPrice = $item['cost_price'];
 
-                // ✅ Increase stock
-                $product->stock += $quantity;
-                $product->save();
+                $product->increment('stock', $quantity);
 
-                // ✅ Purchase item
                 PurchaseItem::create([
                     'purchase_uuid' => $purchase->purchase_uuid,
                     'product_uuid' => $product->product_uuid,
@@ -52,7 +49,6 @@ class PurchaseController extends Controller
                     'cost_price' => $costPrice,
                 ]);
 
-                // ✅ Ledger entry
                 StockLedger::create([
                     'tenant_uuid' => app('tenant_uuid'),
                     'product_uuid' => $product->product_uuid,
@@ -67,18 +63,7 @@ class PurchaseController extends Controller
 
             $purchase->update(['total' => $total]);
 
-            DB::commit();
-
-            return response()->json([
-                'purchase' => $purchase
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
-        }
+            return ResponseHelper::success($purchase, 'Purchase created');
+        });
     }
 }
