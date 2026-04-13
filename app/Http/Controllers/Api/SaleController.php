@@ -78,15 +78,19 @@ class SaleController extends Controller
 
         foreach ($sale->items as $item) {
 
-            $base = $item->price * $item->quantity;
-            $tax = $item->tax_amount;
+            $price = (float)$item->price;
+            $qty = (int)$item->quantity;
+            $taxPercent = (float)$item->tax_percent;
+
+            $base = $price * $qty;
+            $tax = ($base * $taxPercent) / 100;
 
             $items[] = [
                 'name' => $item->product->name,
-                'qty' => $item->quantity,
-                'price' => $item->price,
+                'qty' => $qty,
+                'price' => $price,
                 'total' => $base,
-                'tax_percent' => $item->tax_percent,
+                'tax_percent' => $taxPercent,
                 'tax_amount' => $tax
             ];
 
