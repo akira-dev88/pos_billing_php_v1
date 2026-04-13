@@ -174,4 +174,13 @@ class CartController extends Controller
 
         return response()->json(['message' => 'Discount applied']);
     }
+
+    public function removeItem($cart_uuid, $product_uuid)
+    {
+        CartItem::where('cart_uuid', $cart_uuid)
+            ->where('product_uuid', $product_uuid)
+            ->delete();
+
+        return response()->json(['message' => 'Item removed']);
+    }
 }
