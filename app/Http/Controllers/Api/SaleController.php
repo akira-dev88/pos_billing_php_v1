@@ -139,4 +139,14 @@ class SaleController extends Controller
             'payments' => $payments
         ]);
     }
+
+    public function index()
+    {
+        $sales = Sale::where('tenant_uuid', app('tenant_uuid'))
+            ->latest()
+            ->take(50)
+            ->get();
+
+        return response()->json($sales);
+    }
 }

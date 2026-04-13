@@ -87,6 +87,8 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     
     Route::get('/sales/{sale_uuid}/invoice', [SaleController::class, 'invoice']);
 
+    Route::get('/sales', [SaleController::class, 'index']);
+    
     Route::get('/settings', [SettingController::class, 'get']);
 
     Route::get('/reports/dashboard', [ReportController::class, 'dashboard']);
