@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\CustomerPaymentController;
 use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\SupplierController;
 
 use App\Http\Controllers\Api\ReportController;
 
@@ -111,4 +112,9 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
         Route::put('/staff/{user_uuid}', [StaffController::class, 'update']);
         Route::delete('/staff/{user_uuid}', [StaffController::class, 'destroy']);
     });
+
+    Route::get('/suppliers', [SupplierController::class, 'index']);
+    Route::post('/suppliers', [SupplierController::class, 'store']);
+    Route::put('/suppliers/{supplier_uuid}', [SupplierController::class, 'update']);
+    Route::delete('/suppliers/{supplier_uuid}', [SupplierController::class, 'destroy']);
 });

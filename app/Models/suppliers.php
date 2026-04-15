@@ -5,18 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\HasUuid;
 
-class Purchase extends Model
+class suppliers extends Model
 {
     use HasUuid;
 
-    protected $primaryKey = 'purchase_uuid';
+    protected $primaryKey = 'supplier_uuid';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
-        'purchase_uuid',
-        'tenant_uuid',
-        'total',
         'supplier_uuid',
+        'tenant_uuid',
+        'name',
+        'phone',
+        'email',
+        'address',
     ];
 }

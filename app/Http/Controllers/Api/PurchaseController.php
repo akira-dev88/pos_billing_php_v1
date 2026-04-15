@@ -17,6 +17,7 @@ class PurchaseController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'supplier_uuid' => 'nullable|uuid',
             'items' => 'required|array|min:1',
         ]);
 
@@ -26,7 +27,7 @@ class PurchaseController extends Controller
 
             $purchase = Purchase::create([
                 'tenant_uuid' => app('tenant_uuid'),
-                'supplier_name' => $request->supplier_name,
+                'supplier_uuid' => $request->supplier_uuid,
                 'total' => 0,
             ]);
 
