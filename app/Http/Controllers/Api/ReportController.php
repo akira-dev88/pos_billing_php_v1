@@ -131,4 +131,21 @@ class ReportController extends Controller
             'profit' => ($sales ?? 0) - ($purchases ?? 0)
         ]);
     }
+
+    public function salesTrend()
+    {
+        $tenant = app('tenant_uuid');
+
+        $data = Sale::where('tenant_uuid', $tenant)
+            ->where('created_at', '>=', now()->subDays(6)) // last 7 days
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('SUM(grand_total) as total')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        return response()->json($data);
+    }
 }

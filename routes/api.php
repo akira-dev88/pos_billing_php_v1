@@ -117,4 +117,6 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::delete('/suppliers/{supplier_uuid}', [SupplierController::class, 'destroy']);
 
     Route::get('/purchases', [PurchaseController::class, 'index']);
+
+    Route::get('/reports/sales-trend', [ReportController::class, 'salesTrend']);
 });
