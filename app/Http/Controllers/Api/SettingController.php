@@ -13,7 +13,7 @@ class SettingController extends Controller
     {
         $setting = Setting::where('tenant_uuid', app('tenant_uuid'))->first();
 
-        return response()->json($setting);
+        return response()->json($setting ?? new Setting());
     }
 
     public function save(Request $request)
@@ -33,6 +33,6 @@ class SettingController extends Controller
             ]
         );
 
-        return response()->json($setting);
+        return response()->json($setting ?? new Setting());
     }
 }

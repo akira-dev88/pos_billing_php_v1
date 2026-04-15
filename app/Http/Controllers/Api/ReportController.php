@@ -9,9 +9,11 @@ use App\Models\SaleItem;
 use App\Models\Product;
 use App\Models\PurchaseItem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ReportController extends Controller
 {
+
     // 📊 Dashboard summary
     public function dashboard()
     {
@@ -54,8 +56,14 @@ class ReportController extends Controller
     // 📦 Stock report
     public function stock()
     {
-        return Product::where('tenant_uuid', app('tenant_uuid'))
-            ->get(['name', 'stock', 'price']);
+        try {
+            return Product::where('tenant_uuid', app('tenant_uuid'))
+                ->get(['name', 'stock', 'price']);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     // 💰 Profit estimation
@@ -67,14 +75,18 @@ class ReportController extends Controller
             ->where('sales.tenant_uuid', $tenant)
             ->sum(DB::raw('sale_items.price * sale_items.quantity'));
 
-        $purchases = PurchaseItem::join('purchases', 'purchases.purchase_uuid', '=', 'purchase_items.purchase_uuid')
-            ->where('purchases.tenant_uuid', $tenant)
-            ->sum(DB::raw('purchase_items.cost_price * purchase_items.quantity'));
+        $purchases = 0;
+
+        if (Schema::hasTable('purchase_items')) {
+            $purchases = PurchaseItem::join('purchases', 'purchases.purchase_uuid', '=', 'purchase_items.purchase_uuid')
+                ->where('purchases.tenant_uuid', $tenant)
+                ->sum(DB::raw('purchase_items.cost_price * purchase_items.quantity'));
+        }
 
         return response()->json([
-            'revenue' => $sales,
-            'cost' => $purchases,
-            'profit' => $sales - $purchases
+            'revenue' => $sales ?? 0,
+            'cost' => $purchases ?? 0,
+            'profit' => ($sales ?? 0) - ($purchases ?? 0)
         ]);
     }
 }
