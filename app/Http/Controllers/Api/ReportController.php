@@ -148,4 +148,51 @@ class ReportController extends Controller
 
         return response()->json($data);
     }
+
+    public function profitTrend()
+    {
+        $tenant = app('tenant_uuid');
+
+        // Sales per day
+        $sales = SaleItem::join('sales', 'sales.sale_uuid', '=', 'sale_items.sale_uuid')
+            ->where('sales.tenant_uuid', $tenant)
+            ->where('sales.created_at', '>=', now()->subDays(6))
+            ->select(
+                DB::raw('DATE(sales.created_at) as date'),
+                DB::raw('SUM(sale_items.price * sale_items.quantity) as revenue')
+            )
+            ->groupBy('date')
+            ->get()
+            ->keyBy('date');
+
+        // Purchases per day
+        $purchases = PurchaseItem::join('purchases', 'purchases.purchase_uuid', '=', 'purchase_items.purchase_uuid')
+            ->where('purchases.tenant_uuid', $tenant)
+            ->where('purchases.created_at', '>=', now()->subDays(6))
+            ->select(
+                DB::raw('DATE(purchases.created_at) as date'),
+                DB::raw('SUM(purchase_items.cost_price * purchase_items.quantity) as cost')
+            )
+            ->groupBy('date')
+            ->get()
+            ->keyBy('date');
+
+        $result = [];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+
+            $revenue = $sales[$date]->revenue ?? 0;
+            $cost = $purchases[$date]->cost ?? 0;
+
+            $result[] = [
+                'date' => $date,
+                'revenue' => (float) $revenue,
+                'cost' => (float) $cost,
+                'profit' => (float) $revenue - (float) $cost,
+            ];
+        }
+
+        return response()->json($result);
+    }
 }
