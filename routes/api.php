@@ -84,11 +84,11 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('/carts/{cart_uuid}/discount', [CartController::class, 'applyDiscount']);
 
     Route::delete('/carts/{cart_uuid}/items/{product_uuid}', [CartController::class, 'removeItem']);
-    
+
     Route::get('/sales/{sale_uuid}/invoice', [SaleController::class, 'invoice']);
 
     Route::get('/sales', [SaleController::class, 'index']);
-    
+
     Route::get('/settings', [SettingController::class, 'get']);
 
     Route::get('/reports/dashboard', [ReportController::class, 'dashboard']);
@@ -106,7 +106,9 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
         ->middleware('role:owner,manager,cashier');
 
     Route::middleware(['role:owner'])->group(function () {
-        Route::post('/staff', [StaffController::class, 'store']);
         Route::get('/staff', [StaffController::class, 'index']);
+        Route::post('/staff', [StaffController::class, 'store']);
+        Route::put('/staff/{user_uuid}', [StaffController::class, 'update']);
+        Route::delete('/staff/{user_uuid}', [StaffController::class, 'destroy']);
     });
 });
