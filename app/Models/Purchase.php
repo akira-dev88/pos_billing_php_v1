@@ -19,4 +19,14 @@ class Purchase extends Model
         'total',
         'supplier_uuid',
     ];
+
+    public function items()
+    {
+        return $this->hasMany(PurchaseItem::class, 'purchase_uuid', 'purchase_uuid');
+    }
+
+    public function supplier()
+    {
+        return $this->belongsTo(\App\Models\Suppliers::class, 'supplier_uuid', 'supplier_uuid');
+    }
 }

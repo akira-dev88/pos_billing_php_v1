@@ -58,8 +58,6 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('/sales', [SaleController::class, 'store']);
     Route::get('/sales/{sale_uuid}', [SaleController::class, 'show']);
 
-    Route::post('/carts/{cart_uuid}/checkout', [SaleController::class, 'checkout']);
-
     Route::post('/purchases', [PurchaseController::class, 'store']);
 
     Route::prefix('carts')->group(function () {
@@ -117,4 +115,6 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('/suppliers', [SupplierController::class, 'store']);
     Route::put('/suppliers/{supplier_uuid}', [SupplierController::class, 'update']);
     Route::delete('/suppliers/{supplier_uuid}', [SupplierController::class, 'destroy']);
+
+    Route::get('/purchases', [PurchaseController::class, 'index']);
 });

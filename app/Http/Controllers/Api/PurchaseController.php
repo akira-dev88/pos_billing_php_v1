@@ -17,8 +17,11 @@ class PurchaseController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'supplier_uuid' => 'nullable|uuid',
+            'supplier_uuid' => 'nullable|exists:suppliers,supplier_uuid',
             'items' => 'required|array|min:1',
+            'items.*.product_uuid' => 'required|exists:products,product_uuid',
+            'items.*.quantity' => 'required|numeric|min:1',
+            'items.*.cost_price' => 'required|numeric|min:0',
         ]);
 
         return DB::transaction(function () use ($request) {
@@ -66,5 +69,19 @@ class PurchaseController extends Controller
 
             return ResponseHelper::success($purchase, 'Purchase created');
         });
+    }
+
+    // 📋 List purchases
+    public function index()
+    {
+        $purchases = Purchase::where('tenant_uuid', app('tenant_uuid'))
+            ->with([
+                'items.product',
+                'supplier' // ✅ include supplier
+            ])
+            ->latest()
+            ->get();
+
+        return response()->json($purchases);
     }
 }

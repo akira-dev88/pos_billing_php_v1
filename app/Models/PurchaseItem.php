@@ -12,4 +12,9 @@ class PurchaseItem extends Model
         'quantity',
         'cost_price',
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_uuid', 'product_uuid');
+    }
 }
