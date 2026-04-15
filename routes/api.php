@@ -79,6 +79,9 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::get('/customers/{customer_uuid}/ledger', [CustomerController::class, 'ledger']);
     Route::post('/customers/{customer_uuid}/payments', [CustomerPaymentController::class, 'store']);
 
+    Route::put('/customers/{customer_uuid}', [CustomerController::class, 'update']);
+    Route::delete('/customers/{customer_uuid}', [CustomerController::class, 'destroy']);
+
     Route::put('/carts/{cart_uuid}/items/{product_uuid}', [CartController::class, 'updateItem']);
     Route::post('/carts/{cart_uuid}/discount', [CartController::class, 'applyDiscount']);
 

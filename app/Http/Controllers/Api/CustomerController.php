@@ -36,11 +36,58 @@ class CustomerController extends Controller
 
     public function ledger($customer_uuid)
     {
-        $ledger = CustomerLedger::where('tenant_uuid', app('tenant_uuid'))
+        $entries = CustomerLedger::where('tenant_uuid', app('tenant_uuid'))
             ->where('customer_uuid', $customer_uuid)
             ->latest()
             ->get();
 
+        $balance = 0;
+
+        $ledger = $entries->map(function ($entry) use (&$balance) {
+            $balance += $entry->type === 'debit'
+                ? $entry->amount
+                : -$entry->amount;
+
+            return [
+                ...$entry->toArray(),
+                'balance' => $balance
+            ];
+        });
+
         return response()->json($ledger);
+    }
+
+    public function update(Request $request, $customer_uuid)
+    {
+        $customer = Customer::where('tenant_uuid', app('tenant_uuid'))
+            ->where('customer_uuid', $customer_uuid)
+            ->firstOrFail();
+
+        $request->validate([
+            'name' => 'required|string',
+            'mobile' => 'nullable|string',
+            'address' => 'nullable|string',
+            'gstin' => 'nullable|string',
+        ]);
+
+        $customer->update($request->only([
+            'name',
+            'mobile',
+            'address',
+            'gstin'
+        ]));
+
+        return response()->json($customer);
+    }
+
+    public function destroy($customer_uuid)
+    {
+        $customer = Customer::where('tenant_uuid', app('tenant_uuid'))
+            ->where('customer_uuid', $customer_uuid)
+            ->firstOrFail();
+
+        $customer->delete();
+
+        return response()->json(['message' => 'Customer deleted']);
     }
 }
