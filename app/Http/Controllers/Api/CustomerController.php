@@ -90,4 +90,28 @@ class CustomerController extends Controller
 
         return response()->json(['message' => 'Customer deleted']);
     }
+
+    public function summary()
+    {
+        $tenant = app('tenant_uuid');
+
+        $totalCredit = Customer::where('tenant_uuid', $tenant)
+            ->sum('credit_balance');
+
+        $customersWithCredit = Customer::where('tenant_uuid', $tenant)
+            ->where('credit_balance', '>', 0)
+            ->count();
+
+        $topDebtors = Customer::where('tenant_uuid', $tenant)
+            ->where('credit_balance', '>', 0)
+            ->orderByDesc('credit_balance')
+            ->take(5)
+            ->get(['name', 'credit_balance']);
+
+        return response()->json([
+            'total_credit' => $totalCredit,
+            'customers_with_credit' => $customersWithCredit,
+            'top_debtors' => $topDebtors,
+        ]);
+    }
 }

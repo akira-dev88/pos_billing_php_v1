@@ -124,4 +124,6 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::get('/reports/sales-trend', [ReportController::class, 'salesTrend']);
 
     Route::get('/reports/profit-trend', [ReportController::class, 'profitTrend']);
+
+    Route::get('/customers/summary', [CustomerController::class, 'summary']);
 });
