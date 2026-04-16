@@ -91,21 +91,40 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
 
     Route::get('/sales', [SaleController::class, 'index']);
 
-    Route::get('/settings', [SettingController::class, 'get']);
-
     Route::get('/reports/dashboard', [ReportController::class, 'dashboard']);
     Route::get('/reports/top-products', [ReportController::class, 'topProducts']);
     Route::get('/reports/stock', [ReportController::class, 'stock']);
     Route::get('/reports/profit', [ReportController::class, 'profit']);
 
-    Route::post('/settings', [SettingController::class, 'save'])
-        ->middleware('role:owner');
+    Route::middleware('auth:sanctum')->group(function () {
 
-    Route::post('/products', [ProductController::class, 'store'])
-        ->middleware('role:owner,manager');
+        Route::get('/products', [ProductController::class, 'index']);
+
+        Route::get('/products/search', [ProductController::class, 'search']);
+
+        Route::post('/products', [ProductController::class, 'store'])
+            ->middleware('role:owner,manager');
+
+        Route::put('/products/{uuid}', [ProductController::class, 'update'])
+            ->middleware('role:owner,manager');
+
+        Route::delete('/products/{uuid}', [ProductController::class, 'destroy'])
+            ->middleware('role:owner');
+    });
 
     Route::post('/carts/{cart_uuid}/checkout', [SaleController::class, 'checkout'])
         ->middleware('role:owner,manager,cashier');
+
+    Route::middleware('auth:sanctum')->group(function () {
+
+        Route::get('/settings', [SettingController::class, 'get']);
+
+        Route::post('/settings', [SettingController::class, 'save'])
+            ->middleware('role:owner');
+
+        Route::put('/settings', [SettingController::class, 'update'])
+            ->middleware('role:owner');
+    });
 
     Route::middleware(['role:owner'])->group(function () {
         Route::get('/staff', [StaffController::class, 'index']);
@@ -126,4 +145,8 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::get('/reports/profit-trend', [ReportController::class, 'profitTrend']);
 
     Route::get('/customers/summary', [CustomerController::class, 'summary']);
+
+    Route::get('/customers/reminders', [CustomerController::class, 'summary']);
+
+    Route::get('/customers/aging', [CustomerController::class, 'summary']);
 });

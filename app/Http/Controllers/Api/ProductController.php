@@ -73,4 +73,45 @@ class ProductController extends Controller
 
         return ResponseHelper::success($product, 'Product created');
     }
+
+    public function update(Request $request, $uuid)
+    {
+        $product = Product::where('tenant_uuid', app('tenant_uuid'))
+            ->where('product_uuid', $uuid)
+            ->first();
+
+        if (!$product) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+
+        $product->update([
+            'name' => $request->name ?? $product->name,
+            'price' => $request->price ?? $product->price,
+            'stock' => $request->stock ?? $product->stock,
+            'gst_percent' => $request->gst_percent ?? $product->gst_percent,
+            'barcode' => $request->barcode ?? $product->barcode,
+            'sku' => $request->sku ?? $product->sku,
+        ]);
+
+        return response()->json($product);
+    }
+
+    // ❌ DELETE
+    public function destroy($uuid)
+    {
+        $product = Product::where('tenant_uuid', app('tenant_uuid'))
+            ->where('product_uuid', $uuid)
+            ->first();
+
+        if (!$product) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+
+        $product->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product deleted'
+        ]);
+    }
 }
