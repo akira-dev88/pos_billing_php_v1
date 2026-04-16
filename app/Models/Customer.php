@@ -20,5 +20,6 @@ class Customer extends Model
         'address',
         'gstin',
         'credit_balance',
+        'credit_limit', // ✅ add
     ];
 }

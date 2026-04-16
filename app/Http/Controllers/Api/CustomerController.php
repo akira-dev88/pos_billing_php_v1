@@ -22,6 +22,7 @@ class CustomerController extends Controller
             'mobile' => $request->mobile,
             'address' => $request->address,
             'gstin' => $request->gstin,
+            'credit_limit' => $request->credit_limit ?? 0,
         ]);
 
         return response()->json($customer);
@@ -63,18 +64,12 @@ class CustomerController extends Controller
             ->where('customer_uuid', $customer_uuid)
             ->firstOrFail();
 
-        $request->validate([
-            'name' => 'required|string',
-            'mobile' => 'nullable|string',
-            'address' => 'nullable|string',
-            'gstin' => 'nullable|string',
-        ]);
-
         $customer->update($request->only([
             'name',
             'mobile',
             'address',
-            'gstin'
+            'gstin',
+            'credit_limit', // ✅
         ]));
 
         return response()->json($customer);
