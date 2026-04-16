@@ -114,4 +114,81 @@ class CustomerController extends Controller
             'top_debtors' => $topDebtors,
         ]);
     }
+
+    public function aging()
+    {
+        $tenant = app('tenant_uuid');
+
+        $customers = Customer::where('tenant_uuid', $tenant)
+            ->where('credit_balance', '>', 0)
+            ->get();
+
+        $result = [];
+
+        foreach ($customers as $c) {
+
+            $ledger = \App\Models\CustomerLedger::where('customer_uuid', $c->customer_uuid)
+                ->where('tenant_uuid', $tenant)
+                ->where('type', 'sale')
+                ->get();
+
+            $aging = [
+                '0_30' => 0,
+                '31_60' => 0,
+                '61_90' => 0,
+                '90_plus' => 0,
+            ];
+
+            foreach ($ledger as $l) {
+                $days = now()->diffInDays($l->created_at);
+
+                if ($days <= 30) $aging['0_30'] += $l->amount;
+                elseif ($days <= 60) $aging['31_60'] += $l->amount;
+                elseif ($days <= 90) $aging['61_90'] += $l->amount;
+                else $aging['90_plus'] += $l->amount;
+            }
+
+            $result[] = [
+                'name' => $c->name,
+                'credit_balance' => $c->credit_balance,
+                'aging' => $aging,
+            ];
+        }
+
+        return response()->json($result);
+    }
+
+    public function reminders()
+    {
+        $tenant = app('tenant_uuid');
+
+        $customers = Customer::where('tenant_uuid', $tenant)
+            ->where('credit_balance', '>', 0)
+            ->get();
+
+        $result = [];
+
+        foreach ($customers as $c) {
+
+            $lastPayment = \App\Models\CustomerLedger::where('customer_uuid', $c->customer_uuid)
+                ->where('type', 'payment')
+                ->latest()
+                ->first();
+
+            $days = $lastPayment
+                ? now()->diffInDays($lastPayment->created_at)
+                : 999;
+
+            if ($days > 15) {
+                $result[] = [
+                    'name' => $c->name,
+                    'mobile' => $c->mobile,
+                    'due' => $c->credit_balance,
+                    'days' => $days,
+                ];
+            }
+        }
+
+        return response()->json($result);
+    }
 }
